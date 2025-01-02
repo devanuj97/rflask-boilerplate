@@ -10,12 +10,12 @@ class OtpModel:
         id: Optional[ObjectId | str] = None,
         active: bool = True,
         otp_code: str = "",
-        phone_number: Optional[PhoneNumber] = None,
+        phone_number: Optional[PhoneNumber|dict] = None,
         status: str = "",
         created_at: Optional[datetime] = None,
         updated_at: Optional[datetime] = None,
-        **kwargs
-    ):
+        **kwargs:Any
+    )->None:
         # Use object_id_validate for the ID
         self.id = id if id else kwargs.get("_id", None)
         self.active = active

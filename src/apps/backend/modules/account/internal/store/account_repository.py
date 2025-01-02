@@ -10,7 +10,6 @@ class AccountRepository(ApplicationRepository):
     @classmethod
     def on_init_collection(cls, collection: Collection) -> bool:
         collection.create_index("username")
-        print("working")
         validation_rules = {
             "$jsonSchema": {
                 "bsonType": "object",

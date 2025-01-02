@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 from bson import ObjectId
 
 class PasswordResetTokenModel:
@@ -7,8 +7,8 @@ class PasswordResetTokenModel:
         self,
         id: Optional[ObjectId | str] = None,
         account: Optional[ObjectId | str] = None,
-        expires_at: datetime = None,
-        token: str = None,
+        expires_at: datetime = datetime.now(),
+        token: str = "",
         is_used: bool = False,
         **kwargs
     ):

@@ -12,12 +12,12 @@ class AccountModel:
         active: bool = True,
         first_name: str = "",
         hashed_password: str = "",
-        phone_number: Optional[PhoneNumber] = None,
+        phone_number: Optional[PhoneNumber|dict] = None,
         last_name: str = "",
         username: str = "",
         created_at: Optional[datetime] = None,
         updated_at: Optional[datetime] = None, 
-        **kwargs
+        **kwargs:Any
     ):
         # If "_id" is in kwargs, use it, otherwise default to None
         self.id = id if id else kwargs.get("_id", None)
