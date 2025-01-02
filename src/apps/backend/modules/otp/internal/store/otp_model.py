@@ -1,28 +1,57 @@
 from datetime import datetime
 from typing import Any, Optional
-
 from bson import ObjectId
-from pydantic import BaseModel, ConfigDict, Field
-
 from modules.account.types import PhoneNumber
+import json
 
-
-class OtpModel(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    id: Optional[ObjectId | str] = Field(None, alias="_id")
-    active: bool = True
-    otp_code: str
-    phone_number: PhoneNumber
-    status: str
-    created_at: Optional[datetime] = datetime.now()
-    updated_at: Optional[datetime] = datetime.now()
+class OtpModel:
+    def __init__(
+        self,
+        id: Optional[ObjectId | str] = None,
+        active: bool = True,
+        otp_code: str = "",
+        phone_number: Optional[PhoneNumber] = None,
+        status: str = "",
+        created_at: Optional[datetime] = None,
+        updated_at: Optional[datetime] = None,
+        **kwargs
+    ):
+        # Use object_id_validate for the ID
+        self.id = id if id else kwargs.get("_id", None)
+        self.active = active
+        self.otp_code = otp_code
+        self.phone_number = PhoneNumber(**phone_number) if isinstance(phone_number, dict) else phone_number
+        self.status = status
+        self.created_at = created_at or datetime.now()
+        self.updated_at = updated_at or datetime.now()
 
     def to_json(self) -> str:
-        return self.model_dump_json()
+        return json.dumps(self.to_dict())
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "_id": str(self.id) if self.id else None,
+            "active": self.active,
+            "otp_code": self.otp_code,
+            "phone_number": self.phone_number.__dict__ if self.phone_number else None,
+            "status": self.status,
+            "created_at": self.created_at if self.created_at else None,
+            "updated_at": self.updated_at if self.updated_at else None,
+        }
 
     def to_bson(self) -> dict[str, Any]:
-        data = self.model_dump(exclude_none=True)
+        data = self.to_dict()
+        
+        # Ensure created_at and updated_at are BSON date types (keep as datetime objects)
+        if "created_at" in data and isinstance(data["created_at"], datetime):
+            data["created_at"] = self.created_at  # keep it as datetime object
+        if "updated_at" in data and isinstance(data["updated_at"], datetime):
+            data["updated_at"] = self.updated_at  # keep it as datetime object
+
+        # Remove the _id if it's None
+        if "_id" in data and data["_id"] is None:
+            del data["_id"]
+
         return data
 
     @staticmethod
