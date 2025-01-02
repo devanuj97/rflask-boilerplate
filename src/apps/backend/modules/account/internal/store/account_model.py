@@ -49,13 +49,6 @@ class AccountModel:
     def to_bson(self) -> dict[str, Any]:
         data = self.to_dict()
         
-        # Ensure created_at and updated_at are BSON date types (keep as datetime objects)
-        if "created_at" in data and isinstance(data["created_at"], datetime):
-            data["created_at"] = self.created_at  # keep it as datetime object
-        if "updated_at" in data and isinstance(data["updated_at"], datetime):
-            data["updated_at"] = self.updated_at  # keep it as datetime object
-
-        # Remove the _id if it's None
         if "_id" in data and data["_id"] is None:
             del data["_id"]
 
