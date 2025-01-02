@@ -54,6 +54,7 @@ class AccountReader:
 
     @staticmethod
     def get_account_by_phone_number_optional(*, phone_number: PhoneNumber) -> Optional[Account]:
+        phone_number=phone_number.__dict__ if isinstance(phone_number,PhoneNumber) else phone_number
         account = AccountRepository.collection().find_one({"phone_number": phone_number})
         if account is None:
             return None
@@ -70,6 +71,7 @@ class AccountReader:
 
     @staticmethod
     def check_phone_number_not_exist(*, phone_number: PhoneNumber) -> None:
+        phone_number=phone_number.__dict__ if isinstance(phone_number,PhoneNumber) else phone_number
         account = AccountRepository.collection().find_one({"phone_number": phone_number, "active": True})
 
         if account:

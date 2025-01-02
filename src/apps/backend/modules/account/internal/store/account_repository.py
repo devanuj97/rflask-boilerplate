@@ -22,7 +22,7 @@ class AccountRepository(ApplicationRepository):
                     "last_name": {"bsonType": "string"},
                     "active": {"bsonType": "bool"},
                     "phone_number": {
-                        "bsonType": "object",
+                        "bsonType": ["object", "null"],
                         "properties": {"country_code": {"bsonType": "string"}, "phone_number": {"bsonType": "string"}},
                         "description": "must be an object with country_code and phone_number",
                     },
