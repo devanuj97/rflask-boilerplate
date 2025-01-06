@@ -11,6 +11,7 @@ from modules.account.types import (
     CreateAccountByPhoneNumberParams,
     CreateAccountByUsernameAndPasswordParams,
     CreateAccountParams,
+    PhoneNumber,
     ResetPasswordParams,
 )
 
@@ -20,7 +21,7 @@ class AccountView(MethodView):
         request_data = request.get_json()
         account_params: CreateAccountParams
         if "phone_number" in request_data:
-            account_params = CreateAccountByPhoneNumberParams(**request_data)
+            account_params = CreateAccountByPhoneNumberParams(phone_number=PhoneNumber(**request_data["phone_number"]))
             account = AccountService.get_or_create_account_by_phone_number(params=account_params)
         elif "username" in request_data and "password" in request_data:
             account_params = CreateAccountByUsernameAndPasswordParams(**request_data)

@@ -79,7 +79,7 @@ class TestAccountApi(BaseTestAccount):
     @mock.patch.object(SMSService, "send_sms")
     def test_get_account_with_existing_phone_number_and_send_otp(self, mock_send_sms) -> None:
         AccountService.get_or_create_account_by_phone_number(
-            params=CreateAccountByPhoneNumberParams(phone_number={"country_code": "+91", "phone_number": "9999999999"})
+            params=CreateAccountByPhoneNumberParams(phone_number=PhoneNumber(**{"country_code": "+91", "phone_number": "9999999999"}))
         )
         with app.test_client() as client:
             response = client.post(

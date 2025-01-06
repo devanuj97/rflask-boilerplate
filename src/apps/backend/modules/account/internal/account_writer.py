@@ -25,11 +25,11 @@ class AccountWriter:
         params_dict["hashed_password"] = AccountUtil.hash_password(password=params.password)
         del params_dict["password"]
         AccountReader.check_username_not_exist(params=params)
-        account_bson = AccountModel(**params_dict).to_bson()
+        account_bson = AccountModel(id=None,first_name=params.first_name,last_name=params.last_name,hashed_password=params_dict["hashed_password"],username=params.username,phone_number=None).to_bson()
         query = AccountRepository.collection().insert_one(account_bson)
         account = AccountRepository.collection().find_one({"_id": query.inserted_id})
 
-        return AccountUtil.convert_account_model_to_account(AccountModel(**account))
+        return AccountUtil.convert_account_model_to_account(AccountModel.from_bson(account))
 
     @staticmethod
     def create_account_by_phone_number(*, params: CreateAccountByPhoneNumberParams) -> Account:
@@ -41,11 +41,11 @@ class AccountWriter:
             raise OtpRequestFailedError()
 
         AccountReader.check_phone_number_not_exist(phone_number=params.phone_number)
-        account_bson = AccountModel(**params_dict).to_bson()
+        account_bson = AccountModel(id=None,first_name="",last_name="",hashed_password="",username="",phone_number=phone_number).to_bson()
         query = AccountRepository.collection().insert_one(account_bson)
         account = AccountRepository.collection().find_one({"_id": query.inserted_id})
 
-        return AccountUtil.convert_account_model_to_account(AccountModel(**account))
+        return AccountUtil.convert_account_model_to_account(AccountModel.from_bson(account))
 
     @staticmethod
     def update_password_by_account_id(account_id: str, password: str) -> Account:
@@ -58,4 +58,4 @@ class AccountWriter:
         if updated_account is None:
             raise AccountNotFoundError(f"Account not found: {account_id}")
 
-        return AccountUtil.convert_account_model_to_account(AccountModel(**updated_account))
+        return AccountUtil.convert_account_model_to_account(AccountModel.from_bson(updated_account))

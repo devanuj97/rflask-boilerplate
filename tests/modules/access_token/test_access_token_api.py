@@ -6,6 +6,7 @@ from modules.account.types import (
     AccountErrorCode,
     CreateAccountByPhoneNumberParams,
     CreateAccountByUsernameAndPasswordParams,
+    PhoneNumber,
 )
 from modules.otp.otp_service import OtpService
 from modules.otp.types import CreateOtpParams, OtpErrorCode, VerifyOtpParams
@@ -74,7 +75,7 @@ class TestAccessTokenApi(BaseTestAccessToken):
     def test_get_access_token_by_phone_number_and_otp(self) -> None:
         phone_number = {"country_code": "+91", "phone_number": "9999999999"}
         account = AccountWriter.create_account_by_phone_number(
-            params=CreateAccountByPhoneNumberParams(phone_number=phone_number)
+            params=CreateAccountByPhoneNumberParams(phone_number=PhoneNumber(**phone_number))
         )
 
         otp = OtpService.create_otp(params=CreateOtpParams(phone_number=phone_number))
@@ -91,7 +92,7 @@ class TestAccessTokenApi(BaseTestAccessToken):
 
     def test_get_access_token_with_invalid_otp(self) -> None:
         phone_number = {"country_code": "+91", "phone_number": "9999999999"}
-        AccountWriter.create_account_by_phone_number(params=CreateAccountByPhoneNumberParams(phone_number=phone_number))
+        AccountWriter.create_account_by_phone_number(params=CreateAccountByPhoneNumberParams(phone_number=PhoneNumber(**phone_number)))
 
         with app.test_client() as client:
             response = client.post(
@@ -117,11 +118,11 @@ class TestAccessTokenApi(BaseTestAccessToken):
 
     def test_get_access_token_with_expired_otp(self) -> None:
         phone_number = {"country_code": "+91", "phone_number": "9999999999"}
-        AccountWriter.create_account_by_phone_number(params=CreateAccountByPhoneNumberParams(phone_number=phone_number))
+        AccountWriter.create_account_by_phone_number(params=CreateAccountByPhoneNumberParams(phone_number=PhoneNumber(**phone_number)))
 
-        otp = OtpService.create_otp(params=CreateOtpParams(phone_number=phone_number))
+        otp = OtpService.create_otp(params=CreateOtpParams(phone_number=PhoneNumber(**phone_number)))
 
-        OtpService.verify_otp(params=VerifyOtpParams(phone_number=phone_number, otp_code=otp.otp_code))
+        OtpService.verify_otp(params=VerifyOtpParams(phone_number=PhoneNumber(**phone_number), otp_code=otp.otp_code))
 
         with app.test_client() as client:
             response = client.post(

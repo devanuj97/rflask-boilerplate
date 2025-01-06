@@ -27,7 +27,7 @@ class AccountReader:
         if account is None:
             raise AccountNotFoundError(f"Account with username:: {username}, not found")
 
-        return AccountModel(**account)
+        return AccountModel.from_bson(account)
 
     @staticmethod
     def get_account_by_username_and_password(*, params: AccountSearchParams) -> Account:
@@ -43,7 +43,7 @@ class AccountReader:
         if account is None:
             raise AccountNotFoundError(f"Account with id:: {params.id}, not found")
 
-        return AccountUtil.convert_account_model_to_account(AccountModel(**account))
+        return AccountUtil.convert_account_model_to_account(AccountModel.from_bson(account))
 
     @staticmethod
     def check_username_not_exist(*, params: CreateAccountByUsernameAndPasswordParams) -> None:
@@ -54,12 +54,12 @@ class AccountReader:
 
     @staticmethod
     def get_account_by_phone_number_optional(*, phone_number: PhoneNumber) -> Optional[Account]:
-        phone_number_dict=phone_number.__dict__ if isinstance(phone_number,PhoneNumber) else phone_number
+        phone_number_dict=phone_number.__dict__
         account = AccountRepository.collection().find_one({"phone_number": phone_number_dict})
         if account is None:
             return None
 
-        return AccountUtil.convert_account_model_to_account(AccountModel(**account))
+        return AccountUtil.convert_account_model_to_account(AccountModel.from_bson(account))
 
     @staticmethod
     def get_account_by_phone_number(*, phone_number: PhoneNumber) -> Account:
@@ -71,7 +71,7 @@ class AccountReader:
 
     @staticmethod
     def check_phone_number_not_exist(*, phone_number: PhoneNumber) -> None:
-        phone_number_dict=phone_number.__dict__ if isinstance(phone_number,PhoneNumber) else phone_number
+        phone_number_dict=phone_number.__dict__
         account = AccountRepository.collection().find_one({"phone_number": phone_number_dict, "active": True})
 
         if account:
