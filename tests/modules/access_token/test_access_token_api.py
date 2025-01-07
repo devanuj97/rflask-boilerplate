@@ -78,7 +78,7 @@ class TestAccessTokenApi(BaseTestAccessToken):
             params=CreateAccountByPhoneNumberParams(phone_number=PhoneNumber(**phone_number))
         )
 
-        otp = OtpService.create_otp(params=CreateOtpParams(phone_number=phone_number))
+        otp = OtpService.create_otp(params=CreateOtpParams(phone_number=PhoneNumber(**phone_number)))
 
         with app.test_client() as client:
             response = client.post(

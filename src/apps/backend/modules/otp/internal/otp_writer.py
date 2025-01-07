@@ -13,7 +13,7 @@ from modules.otp.types import CreateOtpParams, Otp, OtpStatus, VerifyOtpParams
 class OtpWriter:
     @staticmethod
     def expire_previous_otps(phone_number: PhoneNumber) -> None:
-        phone_number_dict = phone_number.__dict__ if isinstance(phone_number, PhoneNumber) else phone_number
+        phone_number_dict = asdict(phone_number)
         previous_otps = OtpRepository.collection().find({"phone_number": phone_number_dict, "active": True})
         for otp in previous_otps:
             OtpRepository.collection().update_one(
@@ -27,16 +27,17 @@ class OtpWriter:
         otp_code = OtpUtil.generate_otp(length=4, phone_number=phone_number.phone_number)
         otp_dict = asdict(params)
         otp_dict.update({"otp_code": otp_code, "status": str(OtpStatus.PENDING), "active": True})
-        otp_bson = OtpModel(**otp_dict).to_bson()
+        otp_bson = OtpModel(id=None,**otp_dict).to_bson()
         query = OtpRepository.collection().insert_one(otp_bson)
         otp = OtpRepository.collection().find_one({"_id": query.inserted_id})
 
-        return OtpUtil.convert_otp_model_to_otp(OtpModel(**otp))
+        return OtpUtil.convert_otp_model_to_otp(OtpModel.from_bson(otp))
 
     @staticmethod
     def verify_otp(*, params: VerifyOtpParams) -> Otp:
+        phone_number_dict = asdict(params.phone_number)
         otp = OtpRepository.collection().find_one(
-            {"phone_number": params.phone_number.__dict__, "otp_code": params.otp_code}, sort=[("_id", -1)]
+            {"phone_number": phone_number_dict, "otp_code": params.otp_code}, sort=[("_id", -1)]
         )
         if otp is None:
             raise OtpIncorrectError()
@@ -49,4 +50,4 @@ class OtpWriter:
             {"$set": {"status": OtpStatus.SUCCESS, "active": False}},
             return_document=ReturnDocument.AFTER,
         )
-        return OtpUtil.convert_otp_model_to_otp(OtpModel(**updated_otp))
+        return OtpUtil.convert_otp_model_to_otp(OtpModel.from_bson(updated_otp))

@@ -1,22 +1,33 @@
 from datetime import datetime
 from typing import Any, Optional
 from bson import ObjectId
+from dataclasses import dataclass,asdict
 
+@dataclass
 class PasswordResetTokenModel:
-    def __init__(
-        self,
-        id: Optional[ObjectId | str] = None,
-        account: Optional[ObjectId | str] = None,
-        expires_at: datetime = datetime.now(),
-        token: str = "",
-        is_used: bool = False,
-        **kwargs
-    ):
-        self.id = id if id else kwargs.get("_id", None)
-        self.account = account if account else kwargs.get("account", None)
-        self.expires_at = expires_at
-        self.token = token
-        self.is_used = is_used
+    id: Optional[ObjectId | str]
+    account: ObjectId | str
+    token: str
+    expires_at: datetime
+    is_used: bool = False
+    
+    def to_bson(self) -> dict[str, Any]:
+        data = asdict(self)
+        if data.get("id") is not None:
+            data["_id"] = data.pop("id")
+        else:
+            data.pop("id", None)
+        return data
+    
+    @classmethod
+    def from_bson(cls, bson_data: dict) -> "PasswordResetTokenModel":
+        return cls(
+            id = bson_data.get("_id"),
+            account = bson_data.get("account",),
+            token = bson_data.get("token",""),
+            expires_at = bson_data.get("expires_at",""),
+            is_used = bson_data.get("is_used","")
+        )
 
     @staticmethod
     def get_collection_name() -> str:
