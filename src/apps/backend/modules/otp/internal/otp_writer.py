@@ -25,9 +25,11 @@ class OtpWriter:
         OtpWriter.expire_previous_otps(phone_number=params.phone_number)
         phone_number = PhoneNumber(**asdict(params)["phone_number"])
         otp_code = OtpUtil.generate_otp(length=4, phone_number=phone_number.phone_number)
-        otp_dict = asdict(params)
-        otp_dict.update({"otp_code": otp_code, "status": str(OtpStatus.PENDING), "active": True})
-        otp_bson = OtpModel(id=None,**otp_dict).to_bson()
+        otp_bson = OtpModel(id=None,
+                            phone_number=phone_number,
+                            otp_code=otp_code,
+                            status=str(OtpStatus.PENDING),
+                            active=True).to_bson()
         query = OtpRepository.collection().insert_one(otp_bson)
         otp = OtpRepository.collection().find_one({"_id": query.inserted_id})
 

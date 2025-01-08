@@ -1,12 +1,12 @@
 from datetime import datetime
-from typing import Any, Optional
-
+from typing import Optional
 from bson import ObjectId
-from dataclasses import dataclass,asdict
+from dataclasses import dataclass
 from modules.account.types import PhoneNumber
+from modules.common.base_model import BaseModel
 
 @dataclass
-class AccountModel:
+class AccountModel(BaseModel):
     id: Optional[ObjectId|str]
     first_name: str
     hashed_password: str
@@ -17,27 +17,6 @@ class AccountModel:
     created_at: Optional[datetime] = datetime.now()
     updated_at: Optional[datetime] = datetime.now()
 
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "_id": self.id if self.id else None,
-            "active": self.active,
-            "first_name": self.first_name,
-            "hashed_password": self.hashed_password,
-            "phone_number": asdict(self.phone_number) if self.phone_number else None,
-            "last_name": self.last_name,
-            "username": self.username,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
-        }
-
-    def to_bson(self) -> dict[str, Any]:
-        data = asdict(self)
-        if data.get("id") is not None:
-            data["_id"] = data.pop("id")
-        else:
-            data.pop("id", None)
-        return data
-    
     @classmethod
     def from_bson(cls, bson_data: dict) -> "AccountModel":
         # Extract and handle the phone_number field
