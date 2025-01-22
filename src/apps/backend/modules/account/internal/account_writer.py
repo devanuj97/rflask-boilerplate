@@ -25,7 +25,14 @@ class AccountWriter:
         params_dict["hashed_password"] = AccountUtil.hash_password(password=params.password)
         del params_dict["password"]
         AccountReader.check_username_not_exist(params=params)
-        account_bson = AccountModel(id=None,first_name=params.first_name,last_name=params.last_name,hashed_password=params_dict["hashed_password"],username=params.username,phone_number=None).to_bson()
+        account_bson = AccountModel(
+            id=None,
+            first_name=params.first_name,
+            last_name=params.last_name,
+            hashed_password=params_dict["hashed_password"],
+            username=params.username,
+            phone_number=None,
+        ).to_bson()
         query = AccountRepository.collection().insert_one(account_bson)
         account = AccountRepository.collection().find_one({"_id": query.inserted_id})
 
@@ -41,7 +48,9 @@ class AccountWriter:
             raise OtpRequestFailedError()
 
         AccountReader.check_phone_number_not_exist(phone_number=params.phone_number)
-        account_bson = AccountModel(id=None,first_name="",last_name="",hashed_password="",username="",phone_number=phone_number).to_bson()
+        account_bson = AccountModel(
+            id=None, first_name="", last_name="", hashed_password="", username="", phone_number=phone_number
+        ).to_bson()
         query = AccountRepository.collection().insert_one(account_bson)
         account = AccountRepository.collection().find_one({"_id": query.inserted_id})
 

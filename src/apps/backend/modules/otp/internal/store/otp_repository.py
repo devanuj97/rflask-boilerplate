@@ -37,16 +37,15 @@ class OtpRepository(ApplicationRepository):
 
         collection.create_index("phone_number")
         add_validation_command = {
-            "collMod": cls.collection_name, 
-            "validator": OTP_VALIDATION_SCHEMA, 
-            "validationLevel": "strict"
+            "collMod": cls.collection_name,
+            "validator": OTP_VALIDATION_SCHEMA,
+            "validationLevel": "strict",
         }
         try:
             collection.database.command(add_validation_command)
         except OperationFailure as e:
-            # If the collection does not exist, create it with the validation rules
             if "Collection does not exist" in str(e):
                 collection.database.create_collection(cls.collection_name, validator=OTP_VALIDATION_SCHEMA)
             else:
-                print("OperationFailure occurred for collection accounts",e.details)
+                print("OperationFailure occurred for collection accounts", e.details)
         return True

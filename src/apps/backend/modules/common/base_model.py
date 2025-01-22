@@ -1,9 +1,10 @@
-from dataclasses import dataclass,asdict
+from dataclasses import dataclass, asdict
 from typing import Any
+
 
 @dataclass
 class BaseModel:
-        
+
     def to_bson(self) -> dict[str, Any]:
         data = asdict(self)
         if data.get("id") is not None:

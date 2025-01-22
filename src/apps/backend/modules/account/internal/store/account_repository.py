@@ -24,6 +24,7 @@ ACCOUNT_VALIDATION_SCHEMA = {
     }
 }
 
+
 class AccountRepository(ApplicationRepository):
     collection_name = AccountModel.get_collection_name()
 
@@ -32,17 +33,16 @@ class AccountRepository(ApplicationRepository):
         collection.create_index("username")
 
         add_validation_command = {
-            "collMod": cls.collection_name, 
-            "validator": ACCOUNT_VALIDATION_SCHEMA, 
-            "validationLevel": "strict"
+            "collMod": cls.collection_name,
+            "validator": ACCOUNT_VALIDATION_SCHEMA,
+            "validationLevel": "strict",
         }
 
         try:
             collection.database.command(add_validation_command)
         except OperationFailure as e:
-            # If the collection does not exist, create it with the validation rules
             if "Collection does not exist" in str(e):
                 collection.database.create_collection(cls.collection_name, validator=ACCOUNT_VALIDATION_SCHEMA)
             else:
-                print("OperationFailure occurred for collection accounts",e.details)
+                print("OperationFailure occurred for collection accounts", e.details)
         return True
