@@ -20,13 +20,13 @@ export default class AuthService extends APIService {
   login = async (
     username: string,
     password: string,
-  ): Promise<ApiResponse<AccessToken>> =>{
+  ): Promise<ApiResponse<AccessToken>> => {
     const response = await this.apiClient.post<JsonObject>('/access-tokens', {
       username,
       password,
     });
-    return new ApiResponse(new AccessToken(response.data))
-  }
+    return new ApiResponse(new AccessToken(response.data));
+  };
 
   sendOTP = async (phoneNumber: PhoneNumber): Promise<ApiResponse<void>> =>
     this.apiClient.post('/accounts', {
@@ -39,8 +39,7 @@ export default class AuthService extends APIService {
   verifyOTP = async (
     phoneNumber: PhoneNumber,
     otp: string,
-  ): Promise<ApiResponse<AccessToken>> =>
-  {
+  ): Promise<ApiResponse<AccessToken>> => {
     const response = await this.apiClient.post<JsonObject>('/access-tokens', {
       phone_number: {
         country_code: phoneNumber.countryCode,
@@ -48,6 +47,6 @@ export default class AuthService extends APIService {
       },
       otp_code: otp,
     });
-    return new ApiResponse(new AccessToken(response.data))  
-  }
+    return new ApiResponse(new AccessToken(response.data));
+  };
 }

@@ -56,3 +56,9 @@ class AccountService:
     @staticmethod
     def get_account_by_id(*, params: AccountSearchByIdParams) -> Account:
         return AccountReader.get_account_by_id(params=params)
+
+    @staticmethod
+    def delete_account_by_id(*, params: AccountSearchByIdParams) -> None:
+        AccountReader.get_account_by_id(params=params)
+
+        return AccountWriter.delete_account(params=params)

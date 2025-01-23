@@ -41,3 +41,9 @@ class AccountView(MethodView):
         account = AccountService.reset_account_password(params=reset_account_params)
         account_dict = asdict(account)
         return jsonify(account_dict), 200
+
+    @access_auth_middleware
+    def delete(self, id: str) -> ResponseReturnValue:
+        account_params = AccountSearchByIdParams(id=id)
+        AccountService.delete_account_by_id(params=account_params)
+        return "", 204

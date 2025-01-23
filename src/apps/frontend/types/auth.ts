@@ -11,11 +11,11 @@ export class AccessToken {
     this.expiresAt = json.expires_at as Date;
   }
 
-  toJson(): JsonObject { 
-    return { 
+  toJson(): JsonObject {
+    return {
       account_id: this.accountId,
       token: this.token,
-      expires_at:this.expiresAt 
+      expires_at: this.expiresAt,
     };
   }
 }
