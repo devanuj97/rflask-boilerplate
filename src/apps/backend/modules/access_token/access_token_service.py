@@ -11,7 +11,7 @@ from modules.access_token.types import (
 )
 from modules.account.account_service import AccountService
 from modules.account.internal.account_reader import AccountReader
-from modules.account.types import Account, AccountSearchParams
+from modules.account.types import Account, SearchAccountParams
 from modules.config.config_service import ConfigService
 from modules.otp.errors import OtpIncorrectError
 from modules.otp.otp_service import OtpService
@@ -22,7 +22,7 @@ class AccessTokenService:
     @staticmethod
     def create_access_token_by_username_and_password(*, params: EmailBasedAuthAccessTokenRequestParams) -> AccessToken:
         account = AccountReader.get_account_by_username_and_password(
-            params=AccountSearchParams(username=params.username, password=params.password)
+            params=SearchAccountParams(username=params.username, password=params.password)
         )
 
         return AccessTokenService.__generate_access_token(account=account)

@@ -5,10 +5,10 @@ from modules.account.account_service import AccountService
 from modules.account.errors import AccountNotFoundError
 from modules.account.types import (
     AccountErrorCode,
-    AccountSearchByIdParams,
     CreateAccountByPhoneNumberParams,
     CreateAccountByUsernameAndPasswordParams,
     PhoneNumber,
+    SearchAccountByIdParams,
 )
 from server import app
 from tests.modules.account.base_test_account import BaseTestAccount
@@ -37,7 +37,7 @@ class TestAccountService(BaseTestAccount):
         mock_verify_access_token.return_value = AccessTokenPayload(account_id=account.id)
 
         with app.test_request_context():
-            get_account_by_id = AccountService.get_account_by_id(params=AccountSearchByIdParams(id=account.id))
+            get_account_by_id = AccountService.get_account_by_id(params=SearchAccountByIdParams(id=account.id))
 
         assert get_account_by_id.username == account.username
         assert get_account_by_id.first_name == account.first_name
@@ -48,19 +48,21 @@ class TestAccountService(BaseTestAccount):
         try:
             mock_verify_access_token.return_value = AccessTokenPayload(account_id="5f7b1b7b4f3b9b1b3f3b9b1b")
             with app.test_request_context():
-                AccountService.get_account_by_id(params=AccountSearchByIdParams(id="5f7b1b7b4f3b9b1b3f3b9b1b"))
+                AccountService.get_account_by_id(params=SearchAccountByIdParams(id="5f7b1b7b4f3b9b1b3f3b9b1b"))
         except AccountNotFoundError as exc:
             assert exc.code == AccountErrorCode.NOT_FOUND
 
     def test_get_or_create_account_by_phone_number(self) -> None:
+        phone_number = PhoneNumber(country_code="+91", phone_number="9999999999")
+
         account = AccountService.get_or_create_account_by_phone_number(
-            params=CreateAccountByPhoneNumberParams(phone_number={"country_code": "+91", "phone_number": "9999999999"})
+            params=CreateAccountByPhoneNumberParams(phone_number=phone_number)
         )
 
         assert account.phone_number == PhoneNumber(country_code="+91", phone_number="9999999999")
 
     def test_throw_exception_when_phone_number_not_exist(self) -> None:
-        phone_number = {"country_code": "+91", "phone_number": "9999999999"}
+        phone_number = PhoneNumber(country_code="+91", phone_number="9999999999")
         try:
             AccountService.get_account_by_phone_number(phone_number=phone_number)
         except AccountNotFoundError as exc:

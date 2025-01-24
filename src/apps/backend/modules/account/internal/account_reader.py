@@ -13,10 +13,10 @@ from modules.account.internal.store.account_model import AccountModel
 from modules.account.internal.store.account_repository import AccountRepository
 from modules.account.types import (
     Account,
-    AccountSearchByIdParams,
-    AccountSearchParams,
     CreateAccountByUsernameAndPasswordParams,
     PhoneNumber,
+    SearchAccountByIdParams,
+    SearchAccountParams,
 )
 
 
@@ -30,7 +30,7 @@ class AccountReader:
         return AccountModel(**account)
 
     @staticmethod
-    def get_account_by_username_and_password(*, params: AccountSearchParams) -> Account:
+    def get_account_by_username_and_password(*, params: SearchAccountParams) -> Account:
         account = AccountReader.get_account_by_username(username=params.username)
         if not AccountUtil.compare_password(password=params.password, hashed_password=account.hashed_password):
             raise AccountInvalidPasswordError("Invalid password")
@@ -38,7 +38,7 @@ class AccountReader:
         return AccountUtil.convert_account_model_to_account(account_model=account)
 
     @staticmethod
-    def get_account_by_id(*, params: AccountSearchByIdParams) -> Account:
+    def get_account_by_id(*, params: SearchAccountByIdParams) -> Account:
         account = AccountRepository.collection().find_one({"_id": ObjectId(params.id), "active": True})
         if account is None:
             raise AccountNotFoundError(f"Account with id:: {params.id}, not found")

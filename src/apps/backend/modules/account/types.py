@@ -3,13 +3,13 @@ from typing import Optional, Union
 
 
 @dataclass(frozen=True)
-class AccountSearchParams:
+class SearchAccountParams:
     password: str
     username: str
 
 
 @dataclass(frozen=True)
-class AccountSearchByIdParams:
+class SearchAccountByIdParams:
     id: str
 
 

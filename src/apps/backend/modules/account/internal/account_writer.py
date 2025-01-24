@@ -11,10 +11,10 @@ from modules.account.internal.store.account_model import AccountModel
 from modules.account.internal.store.account_repository import AccountRepository
 from modules.account.types import (
     Account,
-    AccountSearchByIdParams,
     CreateAccountByPhoneNumberParams,
     CreateAccountByUsernameAndPasswordParams,
     PhoneNumber,
+    SearchAccountByIdParams,
 )
 from modules.otp.errors import OtpRequestFailedError
 
@@ -62,7 +62,7 @@ class AccountWriter:
         return AccountUtil.convert_account_model_to_account(AccountModel(**updated_account))
 
     @staticmethod
-    def delete_account(*, params: AccountSearchByIdParams) -> None:
+    def delete_account(*, params: SearchAccountByIdParams) -> None:
         account = AccountReader.get_account_by_id(params=params)
         if not account:
             raise AccountNotFoundError(f"Account not found: {params.id}")

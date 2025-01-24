@@ -2,11 +2,11 @@ from modules.account.internal.account_reader import AccountReader
 from modules.account.internal.account_writer import AccountWriter
 from modules.account.types import (
     Account,
-    AccountSearchByIdParams,
     CreateAccountByPhoneNumberParams,
     CreateAccountByUsernameAndPasswordParams,
     PhoneNumber,
     ResetPasswordParams,
+    SearchAccountByIdParams,
 )
 from modules.otp.otp_service import OtpService
 from modules.otp.types import CreateOtpParams
@@ -37,7 +37,7 @@ class AccountService:
     @staticmethod
     def reset_account_password(*, params: ResetPasswordParams) -> Account:
 
-        account = AccountReader.get_account_by_id(params=AccountSearchByIdParams(id=params.account_id))
+        account = AccountReader.get_account_by_id(params=SearchAccountByIdParams(id=params.account_id))
 
         password_reset_token = PasswordResetTokenService.verify_password_reset_token(
             account_id=account.id, token=params.token
@@ -54,11 +54,9 @@ class AccountService:
         return updated_account
 
     @staticmethod
-    def get_account_by_id(*, params: AccountSearchByIdParams) -> Account:
+    def get_account_by_id(*, params: SearchAccountByIdParams) -> Account:
         return AccountReader.get_account_by_id(params=params)
 
     @staticmethod
-    def delete_account_by_id(*, params: AccountSearchByIdParams) -> None:
-        AccountReader.get_account_by_id(params=params)
-
+    def delete_account_by_id(*, params: SearchAccountByIdParams) -> None:
         return AccountWriter.delete_account(params=params)
