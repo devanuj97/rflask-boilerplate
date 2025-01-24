@@ -18,6 +18,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 const Input: React.FC<InputProps> = ({
+  disabled,
   endEnhancer,
   error,
   handleInputRef,
@@ -43,6 +44,7 @@ const Input: React.FC<InputProps> = ({
       <input
         {...props}
         autoComplete="off"
+        disabled={disabled}
         className={clsx([
           styles.input,
           textAlign ? styles.textAlign[textAlign] : '',

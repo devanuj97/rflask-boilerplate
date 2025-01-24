@@ -1,6 +1,6 @@
-import React, { PropsWithChildren, ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 
-const AuthenticationFormLayout: React.FC<PropsWithChildren<ReactNode>> = ({
+const AuthenticationFormLayout: React.FC<{ children: ReactNode }> = ({
   children,
 }) => (
   <div className="flex min-h-screen flex-wrap items-center justify-center p-4 md:p-6 2xl:p-10">
