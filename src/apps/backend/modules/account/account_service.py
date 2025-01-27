@@ -8,6 +8,7 @@ from modules.account.types import (
     ResetPasswordParams,
     SearchAccountByIdParams,
 )
+from modules.cleanup.cleanup_service import CleanupService
 from modules.otp.otp_service import OtpService
 from modules.otp.types import CreateOtpParams
 from modules.password_reset_token.password_reset_token_service import PasswordResetTokenService
@@ -58,5 +59,6 @@ class AccountService:
         return AccountReader.get_account_by_id(params=params)
 
     @staticmethod
+    @CleanupService.register(final=True)
     def delete_account_by_id(*, params: SearchAccountByIdParams) -> None:
         return AccountWriter.delete_account(params=params)

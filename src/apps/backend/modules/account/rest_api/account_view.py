@@ -13,6 +13,7 @@ from modules.account.types import (
     ResetPasswordParams,
     SearchAccountByIdParams,
 )
+from modules.cleanup.cleanup_service import CleanupService
 
 
 class AccountView(MethodView):
@@ -45,5 +46,5 @@ class AccountView(MethodView):
     @access_auth_middleware
     def delete(self, id: str) -> ResponseReturnValue:
         account_params = SearchAccountByIdParams(id=id)
-        AccountService.delete_account_by_id(params=account_params)
+        CleanupService.execute_cleanup_hooks(params=account_params)
         return "", 200
