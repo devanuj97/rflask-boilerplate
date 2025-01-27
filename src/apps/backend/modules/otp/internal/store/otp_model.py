@@ -10,7 +10,7 @@ from modules.common.base_model import BaseModel
 class OtpModel(BaseModel):
     id: Optional[ObjectId | str]
     otp_code: str
-    phone_number: Optional[PhoneNumber]
+    phone_number: PhoneNumber
     status: str
     active: bool
     created_at: Optional[datetime] = datetime.now()
@@ -19,7 +19,9 @@ class OtpModel(BaseModel):
     @classmethod
     def from_bson(cls, bson_data: dict) -> "OtpModel":
         phone_number_data = bson_data.get("phone_number")
-        phone_number = PhoneNumber(**phone_number_data) if phone_number_data else None
+        if not phone_number_data:
+            raise ValueError("Phone number data is required for OtpModel")
+        phone_number = PhoneNumber(**phone_number_data)
         return cls(
             id=bson_data.get("_id"),
             otp_code=bson_data.get("otp_code", ""),
