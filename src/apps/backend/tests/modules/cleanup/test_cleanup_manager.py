@@ -53,7 +53,7 @@ class TestCleanupManager(BaseTestCleanup):
         self.cleanup_manager.execute_hooks(params=self.params)
 
     def test_failing_hook(self):
-        """Test a failing cleanup hook."""
+        """Test that a failing cleanup hook does not prevent other hooks from executing."""
         executed_hooks = []
 
         def dummy_hook_1(params):
