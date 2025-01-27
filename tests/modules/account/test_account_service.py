@@ -44,7 +44,7 @@ class TestAccountService(BaseTestAccount):
         assert get_account_by_id.last_name == account.last_name
 
     @patch("modules.access_token.access_token_service.AccessTokenService.verify_access_token")
-    def test_throw_exception_when_usernot_exist(self, mock_verify_access_token) -> None:
+    def test_throw_exception_when_user_not_exist(self, mock_verify_access_token) -> None:
         try:
             mock_verify_access_token.return_value = AccessTokenPayload(account_id="5f7b1b7b4f3b9b1b3f3b9b1b")
             with app.test_request_context():
@@ -53,16 +53,14 @@ class TestAccountService(BaseTestAccount):
             assert exc.code == AccountErrorCode.NOT_FOUND
 
     def test_get_or_create_account_by_phone_number(self) -> None:
-        phone_number = PhoneNumber(country_code="+91", phone_number="9999999999")
-
         account = AccountService.get_or_create_account_by_phone_number(
-            params=CreateAccountByPhoneNumberParams(phone_number=phone_number)
+            params=CreateAccountByPhoneNumberParams(phone_number={"country_code": "+91", "phone_number": "9999999999"})
         )
 
         assert account.phone_number == PhoneNumber(country_code="+91", phone_number="9999999999")
 
     def test_throw_exception_when_phone_number_not_exist(self) -> None:
-        phone_number = PhoneNumber(country_code="+91", phone_number="9999999999")
+        phone_number = {"country_code": "+91", "phone_number": "9999999999"}
         try:
             AccountService.get_account_by_phone_number(phone_number=phone_number)
         except AccountNotFoundError as exc:

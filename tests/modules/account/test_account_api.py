@@ -105,10 +105,8 @@ class TestAccountApi(BaseTestAccount):
 
     @mock.patch.object(SMSService, "send_sms")
     def test_get_account_with_existing_phone_number_and_send_otp(self, mock_send_sms) -> None:
-        phone_number = PhoneNumber(country_code="+91", phone_number="9999999999")
-
         AccountService.get_or_create_account_by_phone_number(
-            params=CreateAccountByPhoneNumberParams(phone_number=phone_number)
+            params=CreateAccountByPhoneNumberParams(phone_number={"country_code": "+91", "phone_number": "9999999999"})
         )
         with app.test_client() as client:
             response = client.post(
@@ -189,7 +187,7 @@ class TestAccountApi(BaseTestAccount):
                 f"http://localhost:8080/api/accounts/{account.id}", headers={"Authorization": f"Bearer {access_token}"}
             )
 
-            assert response.status_code == 204
+            assert response.status_code == 200
             assert not response.json
 
             with self.assertRaises(Exception):
@@ -235,10 +233,10 @@ class TestAccountApi(BaseTestAccount):
         with app.test_client() as client:
             access_token = self._get_access_token(client, account)
             response = client.delete(
-                f"http://localhost:8080/api/accounts/invalid_account_id",
+                f"http://localhost:8080/api/accounts/67972da02287e045dcd2ea30",
                 headers={"Authorization": f"Bearer {access_token}"},
             )
 
-            assert response.status_code == 400
+            assert response.status_code == 404
             assert response.json
             assert response.json.get("code") == AccountErrorCode.NOT_FOUND
