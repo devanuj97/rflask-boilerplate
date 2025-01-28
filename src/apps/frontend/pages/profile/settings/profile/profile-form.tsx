@@ -1,15 +1,13 @@
 import React from 'react';
 
-import { FormControl, Input } from '../../../components';
-import { Account } from '../../../types';
+import { FormControl, Input } from '../../../../components';
+import { Account } from '../../../../types';
 
-interface PersonalInfoFormProps {
+interface ProfileFormProps {
   accountDetails: Account;
 }
 
-const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
-  accountDetails,
-}) => (
+const ProfileForm: React.FC<ProfileFormProps> = ({ accountDetails }) => (
   <form action="#">
     {accountDetails.firstName && (
       <div className="mb-5.5 flex flex-col gap-5.5 sm:flex-row">
@@ -56,4 +54,4 @@ const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
   </form>
 );
 
-export default PersonalInfoForm;
+export default ProfileForm;

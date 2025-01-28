@@ -5,13 +5,16 @@ import {
   H2,
   ParagraphSmall,
   VerticalStackLayout,
-} from '../../../components';
-import Modal from '../../../components/modal';
-import { ButtonKind, ButtonSize } from '../../../types/button';
+} from '../../../../components';
+import Modal from '../../../../components/modal';
+import { AsyncError } from '../../../../types';
+import { ButtonKind } from '../../../../types/button';
+import PasswordValidationForm from '../password-validation-form';
 
 interface AccountDeletionModalProps {
   handleDeleteAccount: () => void;
   isDeleteAccountLoading: boolean;
+  onValidationError: (error: AsyncError) => void;
   isModalOpen: boolean;
   setIsModalOpen: (isOpen: boolean) => void;
 }
@@ -19,6 +22,7 @@ interface AccountDeletionModalProps {
 const AccountDeletionModal: React.FC<AccountDeletionModalProps> = ({
   handleDeleteAccount,
   isDeleteAccountLoading,
+  onValidationError,
   isModalOpen,
   setIsModalOpen,
 }) => (
@@ -28,36 +32,23 @@ const AccountDeletionModal: React.FC<AccountDeletionModalProps> = ({
         kind={ButtonKind.TERTIARY}
         onClick={() => setIsModalOpen(false)}
         startEnhancer={
-          <img src="assets/img/icon/close-icon.svg" alt="close-icon" />
+          <img
+            src="../../../../../../assets/img/icon/close-icon.svg"
+            alt="close-icon"
+          />
         }
       />
     </div>
     <VerticalStackLayout gap={5}>
       <H2>Delete Account</H2>
       <ParagraphSmall>
-        Are you sure you want to delete your account? This action cannot be
-        undone!
+        Please enter your password to delete your account.
       </ParagraphSmall>
-      <div className="mt-6 flex items-center justify-end gap-4">
-        <div>
-          <Button
-            onClick={() => setIsModalOpen(false)}
-            kind={ButtonKind.SECONDARY}
-          >
-            Cancel
-          </Button>
-        </div>
-        <div>
-          <Button
-            isLoading={isDeleteAccountLoading}
-            onClick={() => handleDeleteAccount()}
-            size={ButtonSize.DEFAULT}
-            kind={ButtonKind.DANGER}
-          >
-            Delete Account
-          </Button>
-        </div>
-      </div>
+      <PasswordValidationForm
+        handleAccount={handleDeleteAccount}
+        isDeleteAccountLoading={isDeleteAccountLoading}
+        onValidationError={onValidationError}
+      />
     </VerticalStackLayout>
   </Modal>
 );

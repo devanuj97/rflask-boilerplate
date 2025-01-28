@@ -7,9 +7,9 @@ import routes from '../../../constants/routes';
 import { useAccountContext, useAuthContext } from '../../../contexts';
 import { AsyncError } from '../../../types';
 
-import AccountActionsSection from './account-actions-section';
-import AccountDeletionModal from './account-deletion-modal';
-import PersonalInfoSection from './personal-info-section';
+import AccountActionsSection from './account/account-actions-section';
+import AccountDeletionModal from './account/account-deletion-modal';
+import ProfileSection from './profile/profile-section';
 
 const ProfileSettings = () => {
   const {
@@ -44,6 +44,10 @@ const ProfileSettings = () => {
       });
   };
 
+  const onValidationError = (error: AsyncError) => {
+    toast.error(error.message);
+  };
+
   const handleResetPasswordClick = () => {
     navigate(routes.FORGOT_PASSWORD);
   };
@@ -55,7 +59,7 @@ const ProfileSettings = () => {
       <VerticalStackLayout gap={7}>
         <H2>Settings</H2>
         <div className="grid grid-cols-5 gap-8">
-          <PersonalInfoSection accountDetails={accountDetails} />
+          <ProfileSection accountDetails={accountDetails} />
           <AccountActionsSection
             accountDetails={accountDetails}
             setIsDeleteAccountModalOpen={setIsDeleteAccountModalOpen}
@@ -68,6 +72,7 @@ const ProfileSettings = () => {
           isModalOpen={isDeleteAccountModalOpen}
           setIsModalOpen={setIsDeleteAccountModalOpen}
           isDeleteAccountLoading={isDeleteAccountLoading}
+          onValidationError={onValidationError}
         />
       </VerticalStackLayout>
     </div>

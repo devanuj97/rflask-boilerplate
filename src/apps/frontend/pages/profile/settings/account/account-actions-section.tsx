@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { Button, H3 } from '../../../components';
-import { Account } from '../../../types';
-import { ButtonKind, ButtonSize } from '../../../types/button';
+import { Button, H3 } from '../../../../components';
+import { Account } from '../../../../types';
+import { ButtonKind, ButtonSize } from '../../../../types/button';
 
 interface AccountActionsSectionProps {
   accountDetails: Account;
