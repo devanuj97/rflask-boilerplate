@@ -8,20 +8,20 @@ from modules.logger.logger import Logger
 
 
 class CleanupManager:
-    def __init__(self):
+    def __init__(self) -> None:
         self.cleanup_hooks: List[Callable] = []
         self.pre_cleanup_check: Optional[Callable] = None
         self.main_hook: Optional[Callable] = None
-        self.task_queue = queue.Queue()
+        self.task_queue: queue.Queue = queue.Queue()
         self.worker_thread = threading.Thread(target=self._worker, daemon=True)
         self.worker_thread.start()
 
-    def register_pre_cleanup_check(self, func: Callable):
+    def register_pre_cleanup_check(self, func: Callable) -> None:
         """Register a pre-hook check."""
         self.pre_cleanup_check = func
         Logger.info(message=f"Registered pre-hook check: {func.__name__}")
 
-    def register_hook(self, func: Callable, main: bool = False):
+    def register_hook(self, func: Callable, main: bool = False) -> None:
         """Register a cleanup hook."""
         if main:
             self.main_hook = func
@@ -30,22 +30,25 @@ class CleanupManager:
         self.cleanup_hooks.append(func)
         Logger.info(message=f"Registered cleanup hook: {func.__name__}")
 
-    def queue_cleanup(self, params: SearchAccountByIdParams):
+    def queue_cleanup(self, params: SearchAccountByIdParams) -> None:
         """Queue cleanup operation to be handled by the worker thread."""
-        account = self.pre_cleanup_check(params=params)
-        if not account:
-            raise AccountNotFoundError(f"Account not found: {params.id}")
+        if self.pre_cleanup_check is not None:
+            account = self.pre_cleanup_check(params=params)
 
-        try:
-            self.main_hook(params=params)
-            Logger.info(message=f"Successfully executed main cleanup hook: {self.main_hook.__name__}")
-        except Exception as e:
-            Logger.error(message=f"Main cleanup hook failed for account {params.id}: {e}")
+            if not account:
+                raise AccountNotFoundError(f"Account not found: {params.id}")
 
-        Logger.info(message=f"Queuing cleanup for account {params.id}")
-        self.task_queue.put(params)
+        if self.main_hook is not None:
+            try:
+                self.main_hook(params=params)
+                Logger.info(message=f"Successfully executed main cleanup hook: {self.main_hook.__name__}")
+            except Exception as e:
+                Logger.error(message=f"Main cleanup hook failed for account {params.id}: {e}")
 
-    def _worker(self):
+            Logger.info(message=f"Queuing cleanup for account {params.id}")
+            self.task_queue.put(params)
+
+    def _worker(self) -> None:
         """Background worker that processes cleanup tasks from the queue."""
         while True:
             params = self.task_queue.get()
@@ -60,7 +63,7 @@ class CleanupManager:
             finally:
                 self.task_queue.task_done()
 
-    def _execute_hooks(self, params: SearchAccountByIdParams):
+    def _execute_hooks(self, params: SearchAccountByIdParams) -> None:
         """Execute cleanup hooks sequentially (can be modified for retries)."""
         for hook in self.cleanup_hooks:
             try:
@@ -69,7 +72,7 @@ class CleanupManager:
             except Exception as e:
                 Logger.error(message=f"Cleanup hook {hook.__name__} failed for account {params.id}: {e}")
 
-    def stop_worker(self):
+    def stop_worker(self) -> None:
         """Stop the worker thread gracefully."""
         self.task_queue.put(None)
         self.worker_thread.join()
