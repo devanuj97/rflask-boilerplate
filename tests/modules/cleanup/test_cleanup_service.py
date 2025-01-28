@@ -2,6 +2,7 @@ from unittest.mock import MagicMock
 
 from modules.cleanup.cleanup_service import CleanupService
 from modules.cleanup.internal.cleanup_manager import cleanup_manager
+
 from tests.modules.cleanup.base_test_cleanup import BaseTestCleanup
 
 

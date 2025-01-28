@@ -2,6 +2,7 @@ from unittest.mock import MagicMock
 
 from modules.account.errors import AccountNotFoundError
 from modules.cleanup.internal.cleanup_manager import CleanupManager
+
 from tests.modules.cleanup.base_test_cleanup import BaseTestCleanup
 
 
