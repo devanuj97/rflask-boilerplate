@@ -63,8 +63,4 @@ class AccountWriter:
 
     @staticmethod
     def delete_account(*, params: SearchAccountByIdParams) -> None:
-        account = AccountReader.get_account_by_id(params=params)
-        if not account:
-            raise AccountNotFoundError(f"Account not found: {params.id}")
-
-        AccountRepository.collection().delete_one({"_id": ObjectId(account.id)})
+        AccountRepository.collection().delete_one({"_id": ObjectId(params.id)})

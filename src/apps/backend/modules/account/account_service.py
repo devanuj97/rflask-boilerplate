@@ -55,10 +55,11 @@ class AccountService:
         return updated_account
 
     @staticmethod
+    @CleanupService.check()
     def get_account_by_id(*, params: SearchAccountByIdParams) -> Account:
         return AccountReader.get_account_by_id(params=params)
 
     @staticmethod
-    @CleanupService.register(final=True)
+    @CleanupService.register(main=True)
     def delete_account_by_id(*, params: SearchAccountByIdParams) -> None:
         return AccountWriter.delete_account(params=params)

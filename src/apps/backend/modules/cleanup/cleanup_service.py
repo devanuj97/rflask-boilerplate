@@ -6,14 +6,26 @@ from modules.cleanup.internal.cleanup_manager import cleanup_manager
 
 class CleanupService:
     @staticmethod
-    def register(final: bool = False):
+    def register(main: bool = False):
         """
         Returns a decorator for registering cleanup hooks.
-        :param final: If True, registers the hook as a final hook.
+        :param main: If True, registers the hook as the main hook.
         """
 
         def decorator(func: Callable):
-            cleanup_manager.register_hook(func, final=final)
+            cleanup_manager.register_hook(func, main=main)
+            return func
+
+        return decorator
+
+    @staticmethod
+    def check():
+        """
+        Returns a decorator for registering a pre-hook check.
+        """
+
+        def decorator(func: Callable):
+            cleanup_manager.register_pre_cleanup_check(func)
             return func
 
         return decorator
@@ -23,4 +35,4 @@ class CleanupService:
         """
         Execute all cleanup hooks.
         """
-        cleanup_manager.execute_hooks(params=params)
+        cleanup_manager.queue_cleanup(params=params)
