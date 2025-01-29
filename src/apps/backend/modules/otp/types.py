@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import StrEnum
+from typing import Optional
 
 from modules.account.types import PhoneNumber
 
@@ -15,7 +16,7 @@ class OtpStatus(StrEnum):
 class Otp:
     id: str
     otp_code: str
-    phone_number: PhoneNumber
+    phone_number: Optional[PhoneNumber]
     status: str
 
 
