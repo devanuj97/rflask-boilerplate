@@ -31,7 +31,7 @@ application up and running.
 **Pre Requirements:**
 
 - Python (v3.11)
-- Node (v14.17) - [Download](https://nodejs.org/en/download/)
+- Node (v22.13.1) - [Download](https://nodejs.org/download/release/v22.13.1/)
 - MongoDB (v5) - [Download](https://www.mongodb.com/docs/manual/installation/)
 
 **Scripts:**
