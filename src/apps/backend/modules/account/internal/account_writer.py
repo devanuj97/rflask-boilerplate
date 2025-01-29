@@ -21,9 +21,13 @@ from modules.otp.errors import OtpRequestFailedError
 
 class AccountWriter:
     @staticmethod
-    def create_account_by_username_and_password(*, params: CreateAccountByUsernameAndPasswordParams) -> Account:
+    def create_account_by_username_and_password(
+        *, params: CreateAccountByUsernameAndPasswordParams
+    ) -> Account:
         params_dict = asdict(params)
-        params_dict["hashed_password"] = AccountUtil.hash_password(password=params.password)
+        params_dict["hashed_password"] = AccountUtil.hash_password(
+            password=params.password
+        )
         del params_dict["password"]
         AccountReader.check_username_not_exist(params=params)
         account_bson = AccountModel(**params_dict).to_bson()
@@ -33,7 +37,9 @@ class AccountWriter:
         return AccountUtil.convert_account_model_to_account(AccountModel(**account))
 
     @staticmethod
-    def create_account_by_phone_number(*, params: CreateAccountByPhoneNumberParams) -> Account:
+    def create_account_by_phone_number(
+        *, params: CreateAccountByPhoneNumberParams
+    ) -> Account:
         params_dict = asdict(params)
         phone_number = PhoneNumber(**params_dict["phone_number"])
         is_valid_phone_number = is_valid_number(parse(str(phone_number)))
@@ -59,7 +65,15 @@ class AccountWriter:
         if updated_account is None:
             raise AccountNotFoundError(f"Account not found: {account_id}")
 
-        return AccountUtil.convert_account_model_to_account(AccountModel(**updated_account))
+        return AccountUtil.convert_account_model_to_account(
+            AccountModel(**updated_account)
+        )
+
+    @staticmethod
+    def deactivate_account(*, params: SearchAccountByIdParams) -> None:
+        AccountRepository.collection().update_one(
+            {"_id": ObjectId(params.id)}, {"$set": {"active": False}}
+        )
 
     @staticmethod
     def delete_account(*, params: SearchAccountByIdParams) -> None:

@@ -1,9 +1,9 @@
-from unittest.mock import MagicMock
-
-from modules.account.errors import AccountNotFoundError
-from modules.cleanup.internal.cleanup_manager import CleanupManager
+from unittest.mock import ANY, MagicMock, patch
 
 from tests.modules.cleanup.base_test_cleanup import BaseTestCleanup
+
+from modules.cleanup.internal.cleanup_manager import CleanupManager
+from modules.cleanup.types import CreateAccountDeletionRequestParams
 
 
 class TestCleanupManager(BaseTestCleanup):
@@ -11,40 +11,59 @@ class TestCleanupManager(BaseTestCleanup):
         """Setup for CleanupManager tests."""
         self.cleanup_manager = CleanupManager()
 
-    def test_register_pre_cleanup_check(self):
-        mock_check = MagicMock(return_value=True)
-        mock_check.__name__ = "mock_check"
-        self.cleanup_manager.register_pre_cleanup_check(mock_check)
-        self.assertEqual(self.cleanup_manager.pre_cleanup_check, mock_check)
+    @patch(
+        "modules.cleanup.internal.cleanup_module_writer.CleanupModuleWriter.add_cleanup_module"
+    )
+    def test_register_hook(self, mock_add_cleanup_module):
+        func = MagicMock(__name__="mock_func")
+        self.cleanup_manager.register_hook(func, "mock_module", "MockClass")
 
-    def test_register_main_hook(self):
-        mock_main_hook = MagicMock()
-        mock_main_hook.__name__ = "mock_main_hook"
-        self.cleanup_manager.register_hook(mock_main_hook, main=True)
-        self.assertEqual(self.cleanup_manager.main_hook, mock_main_hook)
+        self.assertEqual(len(self.cleanup_manager.HOOKS), 1)
+        hook = self.cleanup_manager.HOOKS[0]
+        self.assertEqual(hook.module_name, "mock_module")
+        self.assertEqual(hook.class_name, "MockClass")
+        self.assertEqual(hook.function_name, "mock_func")
+        mock_add_cleanup_module.assert_not_called()
 
-    def test_queue_cleanup_success(self):
-        mock_check = MagicMock(return_value=True)
-        mock_check.__name__ = "mock_check"
-        mock_main_hook = MagicMock()
-        mock_main_hook.__name__ = "mock_main_hook"
-        mock_hook = MagicMock()
-        mock_hook.__name__ = "mock_hook"
+    @patch(
+        "modules.cleanup.internal.cleanup_module_writer.CleanupModuleWriter.add_cleanup_module"
+    )
+    def test_push_hooks(self, mock_add_cleanup_module):
+        func = MagicMock(__name__="mock_func")
+        self.cleanup_manager.register_hook(func, "mock_module", "MockClass")
+        self.cleanup_manager.push_hooks()
 
-        self.cleanup_manager.register_pre_cleanup_check(mock_check)
-        self.cleanup_manager.register_hook(mock_main_hook, main=True)
-        self.cleanup_manager.register_hook(mock_hook)
+        mock_add_cleanup_module.assert_called_once()
+        self.assertEqual(len(self.cleanup_manager.HOOKS), 0)
 
-        self.cleanup_manager.queue_cleanup(self.params)
-        self.cleanup_manager.stop_worker()
+    @patch(
+        "modules.account.account_service.AccountService.get_account_by_id",
+        return_value=True,
+    )
+    @patch("modules.account.account_service.AccountService.deactivate_account")
+    @patch(
+        "modules.cleanup.internal.account_deletion_request_writer.AccountDeletionRequestWriter.create_account_deletion_request"
+    )
+    def test_queue_account_deletion(
+        self, mock_create_request, mock_deactivate_account, mock_get_account
+    ):
+        self.cleanup_manager.queue_account_deletion(self.params)
 
-        mock_main_hook.assert_called_once_with(params=self.params)
-        mock_hook.assert_called_once_with(params=self.params)
+        mock_get_account.assert_called_once_with(params=self.params)
+        mock_deactivate_account.assert_called_once_with(params=self.params)
+        mock_create_request.assert_called_once_with(
+            params=CreateAccountDeletionRequestParams(
+                account_id=self.params.id, requested_at=ANY
+            )
+        )
 
-    def test_queue_cleanup_fails_if_account_not_found(self):
-        mock_check = MagicMock(return_value=None)
-        mock_check.__name__ = "mock_check"
-        self.cleanup_manager.register_pre_cleanup_check(mock_check)
+    @patch(
+        "modules.account.account_service.AccountService.get_account_by_id",
+        return_value=None,
+    )
+    def test_queue_account_deletion_fails_if_account_not_found(self, mock_get_account):
+        with self.assertRaises(Exception) as context:
+            self.cleanup_manager.queue_account_deletion(self.params)
 
-        with self.assertRaises(AccountNotFoundError):
-            self.cleanup_manager.queue_cleanup(self.params)
+        self.assertTrue("Account not found" in str(context.exception))
+        mock_get_account.assert_called_once_with(params=self.params)

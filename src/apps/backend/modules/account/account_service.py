@@ -11,12 +11,16 @@ from modules.account.types import (
 from modules.cleanup.cleanup_service import CleanupService
 from modules.otp.otp_service import OtpService
 from modules.otp.types import CreateOtpParams
-from modules.password_reset_token.password_reset_token_service import PasswordResetTokenService
+from modules.password_reset_token.password_reset_token_service import (
+    PasswordResetTokenService,
+)
 
 
 class AccountService:
     @staticmethod
-    def create_account_by_username_and_password(*, params: CreateAccountByUsernameAndPasswordParams) -> Account:
+    def create_account_by_username_and_password(
+        *, params: CreateAccountByUsernameAndPasswordParams
+    ) -> Account:
         return AccountWriter.create_account_by_username_and_password(params=params)
 
     @staticmethod
@@ -24,8 +28,12 @@ class AccountService:
         return AccountReader.get_account_by_phone_number(phone_number=phone_number)
 
     @staticmethod
-    def get_or_create_account_by_phone_number(*, params: CreateAccountByPhoneNumberParams) -> Account:
-        account = AccountReader.get_account_by_phone_number_optional(phone_number=params.phone_number)
+    def get_or_create_account_by_phone_number(
+        *, params: CreateAccountByPhoneNumberParams
+    ) -> Account:
+        account = AccountReader.get_account_by_phone_number_optional(
+            phone_number=params.phone_number
+        )
 
         if account is None:
             account = AccountWriter.create_account_by_phone_number(params=params)
@@ -38,7 +46,9 @@ class AccountService:
     @staticmethod
     def reset_account_password(*, params: ResetPasswordParams) -> Account:
 
-        account = AccountReader.get_account_by_id(params=SearchAccountByIdParams(id=params.account_id))
+        account = AccountReader.get_account_by_id(
+            params=SearchAccountByIdParams(id=params.account_id)
+        )
 
         password_reset_token = PasswordResetTokenService.verify_password_reset_token(
             account_id=account.id, token=params.token
@@ -55,11 +65,16 @@ class AccountService:
         return updated_account
 
     @staticmethod
-    @CleanupService.check()
     def get_account_by_id(*, params: SearchAccountByIdParams) -> Account:
         return AccountReader.get_account_by_id(params=params)
 
     @staticmethod
-    @CleanupService.register(main=True)
+    def deactivate_account(*, params: SearchAccountByIdParams) -> None:
+        return AccountWriter.deactivate_account(params=params)
+
+    @staticmethod
+    @CleanupService.register(
+        module_name="account.account_service", class_name="AccountService", main=True
+    )
     def delete_account_by_id(*, params: SearchAccountByIdParams) -> None:
         return AccountWriter.delete_account(params=params)
