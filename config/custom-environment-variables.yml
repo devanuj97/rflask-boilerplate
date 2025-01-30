@@ -1,0 +1,30 @@
+mailer:
+  default_email: 'DEFAULT_EMAIL'
+  default_email_name: 'DEFAULT_EMAIL_NAME'
+  forgot_password_mail_template_id: 'FORGOT_PASSWORD_MAIL_TEMPLATE_ID'
+
+mongodb:
+  uri: "MONGODB_URI"
+
+web_app_host: "WEB_APP_HOST"
+
+inspectlet:
+  key: 'INSPECTLET_KEY'
+
+papertrail:
+  host: 'PAPERTRAIL_HOST'
+  port: 
+    __name: 'PAPERTRAIL_PORT'
+    __format: 'number'
+
+sendgrid:
+  api_key: 'SENDGRID_API_KEY'
+
+otp:
+  default_phone_number: 'DEFAULT_PHONE_NUMBER'
+  default_otp: 'DEFAULT_OTP'
+
+twilio:
+  account_sid: 'TWILIO_ACCOUNT_SID'
+  auth_token: 'TWILIO_AUTH_TOKEN'
+  messaging_service_sid: 'TWILIO_MESSAGING_SERVICE_SID'

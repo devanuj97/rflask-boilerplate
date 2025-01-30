@@ -40,8 +40,8 @@ class AccessTokenService:
 
     @staticmethod
     def __generate_access_token(*, account: Account) -> AccessToken:
-        jwt_signing_key = ConfigService.get_token_signing_key()
-        jwt_expiry = timedelta(days=ConfigService.get_token_expiry_days())
+        jwt_signing_key = ConfigService[str].get_value(key="accounts.token_signing_key")
+        jwt_expiry = timedelta(days=ConfigService[int].get_value(key="accounts.token_expiry_days"))
         expiry_time = datetime.now() + jwt_expiry
         payload = {"account_id": account.id, "exp": (expiry_time).timestamp()}
         jwt_token = jwt.encode(payload, jwt_signing_key, algorithm="HS256")
@@ -52,7 +52,7 @@ class AccessTokenService:
     @staticmethod
     def verify_access_token(*, token: str) -> AccessTokenPayload:
 
-        jwt_signing_key = ConfigService.get_token_signing_key()
+        jwt_signing_key = ConfigService[str].get_value(key="accounts.token_signing_key")
 
         try:
             verified_token = jwt.decode(token, jwt_signing_key, algorithms=["HS256"])

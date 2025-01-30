@@ -1,0 +1,10 @@
+mongodb:
+  uri: "mongodb://db:27017/frm-boilerplate-test"
+
+mailer:
+  default_email: "DEFAULT_EMAIL"
+  default_email_name: "DEFAULT_EMAIL_NAME"
+  forgot_password_mail_template_id: "FORGOT_PASSWORD_MAIL_TEMPLATE_ID"
+
+sms:
+  enabled: false

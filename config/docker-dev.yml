@@ -1,0 +1,10 @@
+logger:
+  transports: ["console"]
+
+mongodb:
+  uri: "mongodb://db:27017/frm-boilerplate-dev"
+
+sms:
+  enabled: false
+
+is_server_running_behind_proxy: false

@@ -11,7 +11,7 @@ class Loggers:
 
     @staticmethod
     def initialize_loggers() -> None:
-        logger_transports = ConfigService.get_logger_transports()
+        logger_transports = ConfigService[list[str]].get_value(key='logger.transports')
         for logger_transport in logger_transports:
             if logger_transport == LoggerTransports.CONSOLE:
                 Loggers._loggers.append(Loggers.__get_console_logger())

@@ -1,0 +1,9 @@
+logger:
+  transports:
+    - "console"
+    - "papertrail"
+
+sms:
+  enabled: true
+
+is_server_running_behind_proxy : true

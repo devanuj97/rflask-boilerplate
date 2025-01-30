@@ -63,10 +63,10 @@ class PasswordResetTokenService:
     @staticmethod
     def send_password_reset_email(account_id: str, first_name: str, username: str, password_reset_token: str) -> None:
 
-        web_app_host = ConfigService.get_web_app_host()
-        default_email = ConfigService.get_mailer_config("default_email")
-        default_email_name = ConfigService.get_mailer_config("default_email_name")
-        forgot_password_mail_template_id = ConfigService.get_mailer_config("forgot_password_mail_template_id")
+        web_app_host = ConfigService[str].get_value(key="web_app_host")
+        default_email = ConfigService[str].get_value(key="mailer.default_email")
+        default_email_name = ConfigService[str].get_value(key="mailer.default_email_name")
+        forgot_password_mail_template_id = ConfigService[str].get_value(key="mailer.forgot_password_mail_template_id")
 
         template_data = {
             "first_name": first_name,

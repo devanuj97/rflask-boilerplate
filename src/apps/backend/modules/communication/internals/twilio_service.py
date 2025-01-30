@@ -22,7 +22,7 @@ class TwilioService:
             # Send SMS
             client.messages.create(
                 to=params.recipient_phone,
-                messaging_service_sid=ConfigService.get_twilio_config(key="messaging_service_sid"),
+                messaging_service_sid=ConfigService[str].get_value(key="twilio.messaging_service_sid"),
                 body=params.message_body,
             )
 
@@ -32,8 +32,8 @@ class TwilioService:
     @staticmethod
     def get_client() -> Client:
         if not TwilioService.__client:
-            account_sid = ConfigService.get_twilio_config(key="account_sid")
-            auth_token = ConfigService.get_twilio_config(key="auth_token")
+            account_sid = ConfigService[str].get_value(key="twilio.account_sid")
+            auth_token = ConfigService[str].get_value(key="twilio.auth_token")
 
             # Initialize the Twilio client
             TwilioService.__client = Client(account_sid, auth_token)
