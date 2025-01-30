@@ -3,14 +3,17 @@ from datetime import datetime, timedelta
 from unittest import mock
 
 import jwt
+from flask.testing import FlaskClient
 
 from modules.access_token.types import AccessTokenErrorCode
 from modules.account.account_service import AccountService
 from modules.account.types import (
+    Account,
     AccountErrorCode,
     CreateAccountByPhoneNumberParams,
     CreateAccountByUsernameAndPasswordParams,
     PhoneNumber,
+    SearchAccountByIdParams,
 )
 from modules.communication.sms_service import SMSService
 from modules.config.config_service import ConfigService
@@ -18,11 +21,39 @@ from modules.otp.types import OtpErrorCode
 from server import app
 from tests.modules.account.base_test_account import BaseTestAccount
 
-ACCOUNT_URL = "http://127.0.0.1:8080/api/accounts"
+BASE_API_URL = "http://127.0.0.1:8080/api"
+ACCOUNT_URL = f"{BASE_API_URL}/accounts"
+ACCESS_TOKEN_URL = f"{BASE_API_URL}/access-tokens"
 HEADERS = {"Content-Type": "application/json"}
+
+CREATE_ACCOUNT_PARAMS = CreateAccountByUsernameAndPasswordParams(
+    first_name="first_name", last_name="last_name", password="password", username="username"
+)
 
 
 class TestAccountApi(BaseTestAccount):
+    @staticmethod
+    def _get_access_token(client: FlaskClient, account: Account) -> str:
+        res = client.post(
+            ACCESS_TOKEN_URL, headers=HEADERS, data=json.dumps({"username": account.username, "password": "password"})
+        )
+        return res.json.get("token")
+
+    @staticmethod
+    def _generate_expired_token(account: Account) -> str:
+        # Create an expired token by setting the expiry to a date in the past using same method as in the
+        # access token service
+        jwt_signing_key = ConfigService.get_token_signing_key()
+        jwt_expiry = timedelta(days=ConfigService.get_token_expiry_days() - 1)
+        payload = {"account_id": account.id, "exp": (datetime.now() - jwt_expiry).timestamp()}
+        expired_token = jwt.encode(payload, jwt_signing_key, algorithm="HS256")
+
+        return expired_token
+
+    @staticmethod
+    def _create_account() -> Account:
+        return AccountService.create_account_by_username_and_password(params=CREATE_ACCOUNT_PARAMS)
+
     def test_create_account_by_username_and_password(self) -> None:
         payload = json.dumps(
             {"first_name": "first_name", "last_name": "last_name", "password": "password", "username": "username"}
@@ -35,11 +66,7 @@ class TestAccountApi(BaseTestAccount):
             assert response.json.get("username") == "username"
 
     def test_create_account_with_existing_user(self) -> None:
-        account = AccountService.create_account_by_username_and_password(
-            params=CreateAccountByUsernameAndPasswordParams(
-                first_name="first_name", last_name="last_name", password="password", username="username"
-            )
-        )
+        account = self._create_account()
         with app.test_client() as client:
             response = client.post(
                 ACCOUNT_URL,
@@ -111,21 +138,12 @@ class TestAccountApi(BaseTestAccount):
             self.assertFalse(mock_send_sms.called)
 
     def test_get_account_by_username_and_password(self) -> None:
-        account = AccountService.create_account_by_username_and_password(
-            params=CreateAccountByUsernameAndPasswordParams(
-                first_name="first_name", last_name="last_name", password="password", username="username"
-            )
-        )
+        account = self._create_account()
 
         with app.test_client() as client:
-            access_token = client.post(
-                "http://127.0.0.1:8080/api/access-tokens",
-                headers=HEADERS,
-                data=json.dumps({"username": account.username, "password": "password"}),
-            )
+            access_token = self._get_access_token(client, account)
             response = client.get(
-                f"http://127.0.0.1:8080/api/accounts/{account.id}",
-                headers={"Authorization": f"Bearer {access_token.json.get('token')}"},
+                f"http://127.0.0.1:8080/api/accounts/{account.id}", headers={"Authorization": f"Bearer {access_token}"}
             )
             assert response.status_code == 200
             assert response.json
@@ -134,19 +152,11 @@ class TestAccountApi(BaseTestAccount):
             assert response.json.get("first_name") == account.first_name
             assert response.json.get("last_name") == account.last_name
 
-    def test_get_account_by_username_and_password_with_invalid_password(self) -> None:
-        account = AccountService.create_account_by_username_and_password(
-            params=CreateAccountByUsernameAndPasswordParams(
-                first_name="first_name", last_name="last_name", password="password", username="username"
-            )
-        )
+    def test_get_account_by_username_and_password_with_invalid_token(self) -> None:
+        account = self._create_account()
 
         with app.test_client() as client:
-            client.post(
-                "http://127.0.0.1:8080/api/access-tokens",
-                headers=HEADERS,
-                data=json.dumps({"username": account.username, "password": "password"}),
-            )
+            self._get_access_token(client, account)
             response = client.get(
                 f"http://127.0.0.1:8080/api/accounts/{account.id}", headers={"Authorization": f"Bearer invalid_token"}
             )
@@ -156,18 +166,8 @@ class TestAccountApi(BaseTestAccount):
             assert response.json.get("code") == AccessTokenErrorCode.ACCESS_TOKEN_INVALID
 
     def test_get_account_with_expired_access_token(self) -> None:
-        account = AccountService.create_account_by_username_and_password(
-            params=CreateAccountByUsernameAndPasswordParams(
-                first_name="first_name", last_name="last_name", password="password", username="username"
-            )
-        )
-
-        # Create an expired token by setting the expiry to a date in the past using same method as in the
-        # access token service
-        jwt_signing_key = ConfigService.get_token_signing_key()
-        jwt_expiry = timedelta(days=ConfigService.get_token_expiry_days() - 1)
-        payload = {"account_id": account.id, "exp": (datetime.now() - jwt_expiry).timestamp()}
-        expired_token = jwt.encode(payload, jwt_signing_key, algorithm="HS256")
+        account = self._create_account()
+        expired_token = self._generate_expired_token(account)
 
         with app.test_client() as client:
             response = client.get(
@@ -177,3 +177,66 @@ class TestAccountApi(BaseTestAccount):
             assert response.status_code == 401
             assert "Access token has expired. Please login again." in response.json.get("message", "")
             assert response.json.get("code") == AccessTokenErrorCode.ACCESS_TOKEN_EXPIRED
+
+    def test_delete_account(self) -> None:
+        account = self._create_account()
+
+        with app.test_client() as client:
+            access_token = self._get_access_token(client, account)
+            response = client.delete(
+                f"http://localhost:8080/api/accounts/{account.id}", headers={"Authorization": f"Bearer {access_token}"}
+            )
+
+            assert response.status_code == 200
+            assert not response.json
+
+            with self.assertRaises(Exception):
+                params = SearchAccountByIdParams(id=account.id)
+                AccountService.get_account_by_id(params=params)
+
+    def test_delete_account_with_invalid_access_token(self) -> None:
+        account = self._create_account()
+
+        with app.test_client() as client:
+            response = client.delete(
+                f"http://localhost:8080/api/accounts/{account.id}", headers={"Authorization": f"Bearer invalid_token"}
+            )
+
+            assert response.status_code == 401
+            assert response.json
+            assert response.json.get("code") == AccessTokenErrorCode.ACCESS_TOKEN_INVALID
+
+            params = SearchAccountByIdParams(id=account.id)
+            account = AccountService.get_account_by_id(params=params)
+            assert account is not None
+
+    def test_delete_account_with_expired_access_token(self) -> None:
+        account = self._create_account()
+        expired_token = self._generate_expired_token(account)
+
+        with app.test_client() as client:
+            response = client.delete(
+                f"http://localhost:8080/api/accounts/{account.id}", headers={"Authorization": f"Bearer {expired_token}"}
+            )
+
+            assert response.status_code == 401
+            assert "Access token has expired. Please login again." in response.json.get("message", "")
+            assert response.json.get("code") == AccessTokenErrorCode.ACCESS_TOKEN_EXPIRED
+
+            params = SearchAccountByIdParams(id=account.id)
+            account = AccountService.get_account_by_id(params=params)
+            assert account is not None
+
+    def test_delete_account_with_invalid_account_id(self) -> None:
+        account = self._create_account()
+
+        with app.test_client() as client:
+            access_token = self._get_access_token(client, account)
+            response = client.delete(
+                f"http://localhost:8080/api/accounts/67972da02287e045dcd2ea30",
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
+
+            assert response.status_code == 404
+            assert response.json
+            assert response.json.get("code") == AccountErrorCode.NOT_FOUND

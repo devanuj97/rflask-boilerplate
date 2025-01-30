@@ -12,12 +12,14 @@ import { getAccessTokenFromStorage } from '../utils/storage-util';
 
 import useAsync from './async.hook';
 
-
 type AccountContextType = {
   accountDetails: Account;
   accountError: Nullable<AsyncError>;
+  deleteAccount: () => Promise<Nullable<void>>;
+  deleteAccountError: Nullable<AsyncError>;
   getAccountDetails: () => Promise<Nullable<Account>>;
   isAccountLoading: boolean;
+  isDeleteAccountLoading: boolean;
 };
 
 const AccountContext = createContext<Nullable<AccountContextType>>(null);
@@ -35,6 +37,14 @@ const getAccountDetailsFn = async (): Promise<ApiResponse<Account>> => {
   throw new Error('Access token not found');
 };
 
+const deleteAccountFn = async (): Promise<ApiResponse<null>> => {
+  const accessToken = getAccessTokenFromStorage();
+  if (accessToken) {
+    return accountService.deleteAccount(accessToken);
+  }
+  throw new Error('Access token not found');
+};
+
 export const AccountProvider: React.FC<PropsWithChildren<ReactNode>> = ({
   children,
 }) => {
@@ -45,6 +55,12 @@ export const AccountProvider: React.FC<PropsWithChildren<ReactNode>> = ({
     asyncCallback: getAccountDetails,
   } = useAsync(getAccountDetailsFn);
 
+  const {
+    isLoading: isDeleteAccountLoading,
+    error: deleteAccountError,
+    asyncCallback: deleteAccount,
+  } = useAsync(deleteAccountFn);
+
   return (
     <AccountContext.Provider
       value={{
@@ -52,6 +68,9 @@ export const AccountProvider: React.FC<PropsWithChildren<ReactNode>> = ({
         accountError,
         getAccountDetails,
         isAccountLoading,
+        deleteAccount,
+        deleteAccountError,
+        isDeleteAccountLoading,
       }}
     >
       {children}

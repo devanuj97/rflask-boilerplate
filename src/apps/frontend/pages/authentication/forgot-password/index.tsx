@@ -21,7 +21,7 @@ export const ForgotPassword: React.FC = () => {
   const [isResendEmailPage, setIsResendEmailPage] = useState(false);
   const [username, setUsername] = useState('');
 
-  const { startTimer, remaininingSecondsStr, isResendEnabled } = useTimer({
+  const { startTimer, remainingSecondsStr, isResendEnabled } = useTimer({
     delayInMilliseconds: passwordResendDelayInSeconds,
   });
 
@@ -64,7 +64,7 @@ export const ForgotPassword: React.FC = () => {
               onSuccess={onResendEmailSuccess}
               onError={onError}
               username={username}
-              timerRemainingSeconds={remaininingSecondsStr}
+              timerRemainingSeconds={remainingSecondsStr}
             />
           ) : (
             <ForgotPasswordForm

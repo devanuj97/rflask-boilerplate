@@ -8,7 +8,7 @@ metadata:
     app: $KUBE_APP-my-worker
     version: $GITHUB_SHA
 spec:
-  schedule: "10 * * * *"
+  schedule: "*/5 * * * *"
   concurrencyPolicy: "Replace"
   jobTemplate:
     spec:
@@ -23,7 +23,7 @@ spec:
             - name: $KUBE_APP
               image: $KUBE_DEPLOYMENT_IMAGE
               imagePullPolicy: Always
-              command: [ "npm", "run", "script", "--file=my_worker_script" ]
+              command: [ "npm", "run", "script", "--file=cleanup_worker" ]
               env:
                 - name: WEB_APP_HOST
                   value: $KUBE_INGRESS_HOSTNAME

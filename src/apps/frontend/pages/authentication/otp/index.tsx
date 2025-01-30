@@ -14,7 +14,7 @@ import AuthenticationPageLayout from '../authentication-page-layout';
 import OTPForm from './otp-form';
 
 export const OTPPage: React.FC = () => {
-  const { startTimer, remaininingSecondsStr, isResendEnabled } = useTimer({
+  const { startTimer, remainingSecondsStr, isResendEnabled } = useTimer({
     delayInMilliseconds: constant.SEND_OTP_DELAY_IN_MS,
   });
 
@@ -52,7 +52,7 @@ export const OTPPage: React.FC = () => {
             onError={onError}
             onResendOTPSuccess={onResendOTPSuccess}
             onVerifyOTPSuccess={onVerifyOTPSuccess}
-            timerRemainingSeconds={remaininingSecondsStr}
+            timerRemainingSeconds={remainingSecondsStr}
           />
         </VerticalStackLayout>
       </AuthenticationFormLayout>
