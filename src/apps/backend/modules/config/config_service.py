@@ -1,6 +1,6 @@
 from modules.common.dict_util import DictUtil
 from modules.config.config_manager import ConfigManager
-from modules.config.types import PapertrailConfig
+from modules.config.types import DatadogConfig
 
 
 class ConfigService:
@@ -21,10 +21,13 @@ class ConfigService:
         return DictUtil.required_get_tuple(input_dict=ConfigManager.config, key="LOGGER_TRANSPORTS")
 
     @staticmethod
-    def get_papertrail_config() -> PapertrailConfig:
-        return PapertrailConfig(
-            host=DictUtil.required_get_str(input_dict=ConfigManager.config, key="PAPERTRAIL_HOST"),
-            port=int(DictUtil.required_get_str(input_dict=ConfigManager.config, key="PAPERTRAIL_PORT")),
+    def get_datadog_config() -> DatadogConfig:
+        datadog_config = DictUtil.required_get_dict(input_dict=ConfigManager.config,key="DATADOG")
+        return DatadogConfig(
+            api_key=DictUtil.required_get_str(input_dict=datadog_config, key="datadog_api_key"),
+            host=DictUtil.required_get_str(input_dict=datadog_config,key="datadog_site_name"),
+            app_name = DictUtil.required_get_str(input_dict=datadog_config,key="datadog_app_name"),
+            datadog_log_level = DictUtil.required_get_str(input_dict=datadog_config,key="datadog_log_level")
         )
 
     @staticmethod

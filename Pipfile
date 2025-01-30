@@ -20,6 +20,7 @@ sendgrid = "==6.11.0"
 tomli = "==2.0.1"
 twilio = "==9.2.4"
 waitress = "==2.1.2"
+datadog-api-client = "==2.31.0"
 
 [dev-packages]
 autoflake = "==2.3.1"
