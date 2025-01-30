@@ -9,6 +9,5 @@ class CleanupModuleRepository(ApplicationRepository):
 
     @classmethod
     def on_init_collection(cls, collection: Collection) -> bool:
-        collection.delete_many({})
         collection.create_index("module_name")
         return True

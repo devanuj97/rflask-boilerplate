@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 @dataclass(frozen=True)
-class CleanupModuleParams:
+class CleanupModule:
     module_name: str
     class_name: str
     function_name: str

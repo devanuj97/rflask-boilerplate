@@ -73,8 +73,6 @@ class AccountService:
         return AccountWriter.deactivate_account(params=params)
 
     @staticmethod
-    @CleanupService.register(
-        module_name="account.account_service", class_name="AccountService", main=True
-    )
+    @CleanupService.register(main=True)
     def delete_account_by_id(*, params: SearchAccountByIdParams) -> None:
         return AccountWriter.delete_account(params=params)

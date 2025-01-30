@@ -23,13 +23,18 @@ from modules.account.types import (
 class AccountReader:
     @staticmethod
     def get_account_by_username(*, username: str) -> AccountModel:
-        account = AccountRepository.collection().find_one(
-            {"username": username, "active": True}
-        )
-        if account is None:
+        account_data = AccountRepository.collection().find_one({"username": username})
+        if account_data is None:
             raise AccountNotFoundError(f"Account with username:: {username}, not found")
 
-        return AccountModel(**account)
+        account = AccountModel(**account_data)
+
+        if not account.active:
+            raise AccountNotFoundError(
+                f"Account with username:: {username}, queued for deletion"
+            )
+
+        return account
 
     @staticmethod
     def get_account_by_username_and_password(*, params: SearchAccountParams) -> Account:
@@ -55,26 +60,39 @@ class AccountReader:
     def check_username_not_exist(
         *, params: CreateAccountByUsernameAndPasswordParams
     ) -> None:
-        account = AccountRepository.collection().find_one(
-            {"username": params.username, "active": True}
-        )
+        account = AccountRepository.collection().find_one({"username": params.username})
 
         if account:
-            raise AccountWithUserNameExistsError(
-                f"Account already exist for username:: {params.username}"
-            )
+            account = AccountModel(**account)
+
+            if account.active:
+                raise AccountWithUserNameExistsError(
+                    f"Account already exist for username:: {params.username}"
+                )
+
+            else:
+                raise AccountWithUserNameExistsError(
+                    f"Account for username:: {params.username}, not been deleted yet"
+                )
 
     @staticmethod
     def get_account_by_phone_number_optional(
         *, phone_number: PhoneNumber
     ) -> Optional[Account]:
-        account = AccountRepository.collection().find_one(
+        account_data = AccountRepository.collection().find_one(
             {"phone_number": phone_number}
         )
-        if account is None:
+        if account_data is None:
             return None
 
-        return AccountUtil.convert_account_model_to_account(AccountModel(**account))
+        account = AccountModel(**account_data)
+
+        if not account.active:
+            raise AccountNotFoundError(
+                f"Account with phone number:: {phone_number}, queued for deletion"
+            )
+
+        return AccountUtil.convert_account_model_to_account(account)
 
     @staticmethod
     def get_account_by_phone_number(*, phone_number: PhoneNumber) -> Account:

@@ -35,7 +35,7 @@ class AccountDeletionRequestWriter:
         )
 
     @staticmethod
-    def delete_account_deletion_request(
+    def remove_account_deletion_request(
         *, params: SearchAccountDeletionRequestParams
     ) -> None:
         account_deletion_request = (

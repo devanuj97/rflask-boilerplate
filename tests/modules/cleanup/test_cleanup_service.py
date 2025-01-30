@@ -8,10 +8,12 @@ from modules.cleanup.cleanup_service import CleanupService
 class TestCleanupService(BaseTestCleanup):
     @patch("modules.cleanup.internal.cleanup_manager.CleanupManager.register_hook")
     def test_register(self, mock_register_hook):
-        func = MagicMock(__name__="mock_func")
-        decorator = CleanupService.register(
-            module_name="mock_module", class_name="MockClass"
+        func = MagicMock(
+            __name__="mock_func",
+            __module__="mock_module",
+            __qualname__="MockClass.mock_func",
         )
+        decorator = CleanupService.register()
         decorated_func = decorator(func)
 
         mock_register_hook.assert_called_once_with(

@@ -1,3 +1,4 @@
+import importlib
 from datetime import UTC, datetime
 from typing import Callable, List
 
@@ -8,6 +9,8 @@ from modules.cleanup.internal.account_deletion_request_writer import (
 )
 from modules.cleanup.internal.cleanup_module_writer import CleanupModuleWriter
 from modules.cleanup.types import (
+    AccountDeletionRequest,
+    CleanupModule,
     CreateAccountDeletionRequestParams,
     CreateCleanupModuleParams,
 )
@@ -28,19 +31,21 @@ class CleanupManager:
             function_name=func.__name__,
             main=main,
         )
-        # CleanupModuleWriter.add_cleanup_module(params=params)
         CleanupManager.HOOKS.append(params)
-
-        if main:
-            Logger.info(message=f"Registered main hook: {func.__name__}")
-            return
-        Logger.info(message=f"Registered cleanup hook: {func.__name__}")
 
     @staticmethod
     def push_hooks() -> None:
         """Push all registered hooks to the database."""
+        CleanupModuleWriter.clear_cleanup_modules()
+
         for hook in CleanupManager.HOOKS:
             CleanupModuleWriter.add_cleanup_module(params=hook)
+
+            if hook.main:
+                Logger.info(message=f"Registered main hook: {hook.function_name}")
+
+            Logger.info(message=f"Registered cleanup hook: {hook.function_name}")
+
         CleanupManager.HOOKS = []
 
     @staticmethod
@@ -60,3 +65,17 @@ class CleanupManager:
                 account_id=params.id, requested_at=datetime.now(UTC)
             )
         )
+
+    @staticmethod
+    def execute_hook(
+        *,
+        cleanup_module: CleanupModule,
+        account_deletion_request: AccountDeletionRequest,
+    ) -> None:
+        """Execute a cleanup hook."""
+        module = importlib.import_module(cleanup_module.module_name)
+        cleanup_class = getattr(module, cleanup_module.class_name)
+        cleanup_function = cleanup_class.__dict__[cleanup_module.function_name]
+
+        params = SearchAccountByIdParams(id=account_deletion_request.account_id)
+        cleanup_function(params=params)

@@ -9,6 +9,10 @@ from modules.cleanup.types import CreateCleanupModuleParams
 
 class CleanupModuleWriter:
     @staticmethod
+    def clear_cleanup_modules() -> None:
+        CleanupModuleRepository.collection().delete_many({})
+
+    @staticmethod
     def add_cleanup_module(*, params: CreateCleanupModuleParams) -> None:
         params_dict = asdict(params)
 
